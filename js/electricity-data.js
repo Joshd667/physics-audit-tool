@@ -1,7 +1,7 @@
 // js/electricity-data.js
 export const electricityData = {
-    electricity_basic: {
-        title: "3.5.1 Current & Voltage",
+    current_voltage: {
+        title: "3.5.1a Current & Voltage",
         paper: "Paper 1",
         icon: "zap",
         topics: [
@@ -16,8 +16,8 @@ export const electricityData = {
             { id: "3.5.1.3c", title: "Superconductivity", prompt: "Can you describe the phenomenon of superconductivity and define the critical temperature?" }
         ]
     },
-    electricity_circuits: {
-        title: "3.5.1 Circuits & Power",
+    dc_circuits: {
+        title: "3.5.1b DC Circuits",
         paper: "Paper 1",
         icon: "zap",
         topics: [
