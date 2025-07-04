@@ -10,7 +10,7 @@ export const periodicMotionData = {
             { id: "3.6.1.1c", title: "Centripetal force", prompt: "Can you explain that a resultant force, the centripetal force, is required to cause circular motion? Can you use F = mv²/r and F = mω²r to solve problems?" }
         ]
     },
-    shm: {
+    simple_harmonic_motion: {
         title: "3.6.1.2-3 Simple Harmonic Motion",
         paper: "Paper 2",
         icon: "target",
