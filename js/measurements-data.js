@@ -38,7 +38,10 @@ export const measurementsData = {
                     "1 eV = 1.6 × 10⁻¹⁹ J",
                     "3.2 × 10⁸ m/s = 320 Mm/s"
                 ],
-                resources: []
+                resources: [
+                    { title: "SI Base Units Video", url: "https://example.com/video" },
+                    { title: "Unit Converter Tool", url: "https://example.com/converter" }
+                ]
             },
             { 
                 id: "3.1.2a", 
