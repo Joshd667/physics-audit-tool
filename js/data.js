@@ -1,24 +1,27 @@
 // js/data.js - Main data combiner
 import { measurementsData } from './measurements-data.js';
 import { particlesData } from './particles-data.js';
-// Import other data files here as we create them
-// import { wavesData } from './waves-data.js';
-// import { mechanicsData } from './mechanics-data.js';
-// import { electricityData } from './electricity-data.js';
-// import { periodicMotionData } from './periodic-motion-data.js';
-// import { thermalData } from './thermal-data.js';
-// import { fieldsData } from './fields-data.js';
-// import { magneticFieldsData } from './magnetic-fields-data.js';
-// import { nuclearData } from './nuclear-data.js';
+import { wavesData } from './waves-data.js';
+import { mechanicsData } from './mechanics-data.js';
+import { electricityData } from './electricity-data.js';
+import { periodicMotionData } from './periodic-motion-data.js';
+import { thermalData } from './thermal-data.js';
+import { fieldsData } from './fields-data.js';
+import { magneticFieldsData } from './magnetic-fields-data.js';
+import { nuclearData } from './nuclear-data.js';
 
 // Combine all specification data
 export const specificationData = {
     ...measurementsData,
     ...particlesData,
-    // Add other data as we create the files
-    // ...wavesData,
-    // ...mechanicsData,
-    // etc.
+    ...wavesData,
+    ...mechanicsData,
+    ...electricityData,
+    ...periodicMotionData,
+    ...thermalData,
+    ...fieldsData,
+    ...magneticFieldsData,
+    ...nuclearData
 };
 
 // Paper Mode Groups - split across Paper 1 and Paper 2
