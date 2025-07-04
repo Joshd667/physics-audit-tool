@@ -1,6 +1,6 @@
 // js/particles-data.js
 export const particlesData = {
-    particles_structure: {
+    atomic_structure: {
         title: "3.2.1 Atomic Structure & Particles",
         paper: "Paper 1",
         icon: "atom",
@@ -16,7 +16,7 @@ export const particlesData = {
             { id: "3.2.1.3c", title: "Annihilation and pair production", prompt: "Can you describe the processes of pair production (a photon creating a particle-antiparticle pair) and annihilation (a particle and antiparticle meeting to produce photons)? Can you calculate the minimum photon energy for pair production?" }
         ]
     },
-    particle_physics: {
+    particle_interactions: {
         title: "3.2.1 Particle Physics & Interactions",
         paper: "Paper 1",
         icon: "atom",
