@@ -4,7 +4,21 @@ body { font-family: sans-serif; }
 .transition-all { transition: all 0.3s ease-in-out; }
 .dropdown-content { max-height: 0; overflow: hidden; transition: max-height 0.3s ease-in-out; }
 .dropdown-content.expanded { max-height: 1000px; }
-.animated-gradient { background: linear-gradient(-45deg, #e0f7fa, #e3f2fd, #f1f8e9, #e8eaf6); background-size: 400% 400%; animation: gradient-animation 15s ease infinite; }
+
+/* Light mode animated gradient */
+.animated-gradient { 
+    background: linear-gradient(-45deg, #e0f7fa, #e3f2fd, #f1f8e9, #e8eaf6); 
+    background-size: 400% 400%; 
+    animation: gradient-animation 15s ease infinite; 
+}
+
+/* Dark mode animated gradient */
+.dark .animated-gradient { 
+    background: linear-gradient(-45deg, #1e293b, #1f2937, #111827, #0f172a); 
+    background-size: 400% 400%; 
+    animation: gradient-animation 15s ease infinite; 
+}
+
 @keyframes gradient-animation {
     0% { background-position: 0% 50%; }
     50% { background-position: 100% 50%; }
