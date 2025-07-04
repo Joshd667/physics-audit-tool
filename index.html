@@ -375,14 +375,19 @@
                                             </div>
                                         </template>
                                         
-                                        <!-- Resources Section (Collapsible) -->
-                                        <template x-if="topic.resources && topic.resources.length > 0">
-                                            <div class="mb-3" x-data="{ resourcesOpen: false }">
+                                        <!-- Resources Section (Always visible, collapsible when populated) -->
+                                        <div class="mb-3" x-data="{ resourcesOpen: false }">
+                                            <template x-if="topic.resources && topic.resources.length > 0">
                                                 <button @click="resourcesOpen = !resourcesOpen" class="flex items-center justify-between w-full text-left">
                                                     <h5 class="font-bold text-xs text-gray-700 dark:text-gray-300">Resources</h5>
                                                     <i data-lucide="chevron-down" :class="resourcesOpen ? 'rotate-180' : ''" class="w-3 h-3 text-gray-500 transition-transform"></i>
                                                 </button>
-                                                <div x-show="resourcesOpen" x-transition class="mt-1">
+                                            </template>
+                                            <template x-if="!topic.resources || topic.resources.length === 0">
+                                                <h5 class="font-bold text-xs text-gray-700 dark:text-gray-300">Resources</h5>
+                                            </template>
+                                            <div x-show="resourcesOpen || (!topic.resources || topic.resources.length === 0)" x-transition class="mt-1">
+                                                <template x-if="topic.resources && topic.resources.length > 0">
                                                     <ul class="text-xs text-gray-600 dark:text-gray-400 space-y-1">
                                                         <template x-for="resource in topic.resources" :key="resource.title">
                                                             <li class="flex items-start">
@@ -391,9 +396,12 @@
                                                             </li>
                                                         </template>
                                                     </ul>
-                                                </div>
+                                                </template>
+                                                <template x-if="!topic.resources || topic.resources.length === 0">
+                                                    <p class="text-xs text-gray-400 dark:text-gray-500 italic">Resources will be added here</p>
+                                                </template>
                                             </div>
-                                        </template>
+                                        </div>
                                     </div>
                                     
                                     <div class="flex justify-between items-center">
