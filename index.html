@@ -63,7 +63,7 @@
                 this.darkMode = localStorage.getItem('darkMode') === 'true';
                 this.applyDarkMode();
                 
-                // Set up watchers without excessive icon refreshing
+                // Set up watchers
                 this.$watch('darkMode', () => {
                     this.applyDarkMode();
                     localStorage.setItem('darkMode', this.darkMode);
@@ -79,7 +79,11 @@
                     this.activeSection = firstItem.type === 'single' ? firstItem.key : firstItem.sections[0];
                 });
                 
-                // Single icon creation after initialization
+                // Single icon creation after initialization - only for static icons
+                this.refreshIcons();
+            },
+
+            refreshIcons() {
                 this.$nextTick(() => lucide.createIcons());
             },
 
@@ -341,18 +345,18 @@
                                         <div class="mb-3" x-data="{ objectivesOpen: false }">
                                             <template x-if="topic.learningObjectives && topic.learningObjectives.length > 0">
                                                 <button @click="objectivesOpen = !objectivesOpen" class="flex items-center justify-between w-full text-left mb-1">
-                                                    <h5 class="font-bold text-xs text-gray-700 dark:text-gray-300">Learning Objectives</h5>
-                                                    <span class="text-gray-500 text-sm transition-transform duration-200" :class="objectivesOpen ? 'rotate-180' : ''">▼</span>
+                                                    <h5 class="section-header">Learning Objectives</h5>
+                                                    <span class="dropdown-arrow" :class="objectivesOpen ? 'rotate-180' : ''">▼</span>
                                                 </button>
                                             </template>
                                             <template x-if="!topic.learningObjectives || topic.learningObjectives.length === 0">
-                                                <h5 class="font-bold text-xs text-gray-700 dark:text-gray-300 mb-1">Learning Objectives</h5>
+                                                <h5 class="section-header mb-1">Learning Objectives</h5>
                                             </template>
                                             <div x-show="objectivesOpen || (!topic.learningObjectives || topic.learningObjectives.length === 0)" x-transition class="mt-1">
                                                 <template x-if="topic.learningObjectives && topic.learningObjectives.length > 0">
-                                                    <ul class="text-xs text-gray-600 dark:text-gray-400 space-y-1">
+                                                    <ul class="topic-text space-y-1">
                                                         <template x-for="objective in topic.learningObjectives" :key="objective">
-                                                            <li class="flex items-start">
+                                                            <li class="bullet-point">
                                                                 <span class="text-blue-500 mr-1">•</span>
                                                                 <span x-text="objective"></span>
                                                             </li>
@@ -360,7 +364,7 @@
                                                     </ul>
                                                 </template>
                                                 <template x-if="!topic.learningObjectives || topic.learningObjectives.length === 0">
-                                                    <p class="text-xs text-gray-400 dark:text-gray-500 italic">Learning objectives will be added here</p>
+                                                    <p class="topic-text italic">Learning objectives will be added here</p>
                                                 </template>
                                             </div>
                                         </div>
@@ -369,18 +373,18 @@
                                         <div class="mb-3" x-data="{ examplesOpen: false }">
                                             <template x-if="topic.examples && topic.examples.length > 0">
                                                 <button @click="examplesOpen = !examplesOpen" class="flex items-center justify-between w-full text-left mb-1">
-                                                    <h5 class="font-bold text-xs text-gray-700 dark:text-gray-300">Examples</h5>
-                                                    <span class="text-gray-500 text-sm transition-transform duration-200" :class="examplesOpen ? 'rotate-180' : ''">▼</span>
+                                                    <h5 class="section-header">Examples</h5>
+                                                    <span class="dropdown-arrow" :class="examplesOpen ? 'rotate-180' : ''">▼</span>
                                                 </button>
                                             </template>
                                             <template x-if="!topic.examples || topic.examples.length === 0">
-                                                <h5 class="font-bold text-xs text-gray-700 dark:text-gray-300 mb-1">Examples</h5>
+                                                <h5 class="section-header mb-1">Examples</h5>
                                             </template>
                                             <div x-show="examplesOpen || (!topic.examples || topic.examples.length === 0)" x-transition class="mt-1">
                                                 <template x-if="topic.examples && topic.examples.length > 0">
-                                                    <ul class="text-xs text-gray-600 dark:text-gray-400 space-y-1">
+                                                    <ul class="topic-text space-y-1">
                                                         <template x-for="example in topic.examples" :key="example">
-                                                            <li class="flex items-start">
+                                                            <li class="bullet-point">
                                                                 <span class="text-green-500 mr-1">•</span>
                                                                 <span x-text="example"></span>
                                                             </li>
@@ -388,7 +392,7 @@
                                                     </ul>
                                                 </template>
                                                 <template x-if="!topic.examples || topic.examples.length === 0">
-                                                    <p class="text-xs text-gray-400 dark:text-gray-500 italic">Examples will be added here</p>
+                                                    <p class="topic-text italic">Examples will be added here</p>
                                                 </template>
                                             </div>
                                         </div>
@@ -397,18 +401,18 @@
                                         <div class="mb-3" x-data="{ resourcesOpen: false }">
                                             <template x-if="topic.resources && topic.resources.length > 0">
                                                 <button @click="resourcesOpen = !resourcesOpen" class="flex items-center justify-between w-full text-left mb-1">
-                                                    <h5 class="font-bold text-xs text-gray-700 dark:text-gray-300">Resources</h5>
-                                                    <span class="text-gray-500 text-sm transition-transform duration-200" :class="resourcesOpen ? 'rotate-180' : ''">▼</span>
+                                                    <h5 class="section-header">Resources</h5>
+                                                    <span class="dropdown-arrow" :class="resourcesOpen ? 'rotate-180' : ''">▼</span>
                                                 </button>
                                             </template>
                                             <template x-if="!topic.resources || topic.resources.length === 0">
-                                                <h5 class="font-bold text-xs text-gray-700 dark:text-gray-300 mb-1">Resources</h5>
+                                                <h5 class="section-header mb-1">Resources</h5>
                                             </template>
                                             <div x-show="resourcesOpen || (!topic.resources || topic.resources.length === 0)" x-transition class="mt-1">
                                                 <template x-if="topic.resources && topic.resources.length > 0">
-                                                    <ul class="text-xs text-gray-600 dark:text-gray-400 space-y-1">
+                                                    <ul class="topic-text space-y-1">
                                                         <template x-for="resource in topic.resources" :key="resource.title">
-                                                            <li class="flex items-start">
+                                                            <li class="bullet-point">
                                                                 <span class="text-purple-500 mr-1">•</span>
                                                                 <a :href="resource.url" class="text-blue-600 dark:text-blue-400 hover:underline" x-text="resource.title"></a>
                                                             </li>
@@ -416,7 +420,7 @@
                                                     </ul>
                                                 </template>
                                                 <template x-if="!topic.resources || topic.resources.length === 0">
-                                                    <p class="text-xs text-gray-400 dark:text-gray-500 italic">Resources will be added here</p>
+                                                    <p class="topic-text italic">Resources will be added here</p>
                                                 </template>
                                             </div>
                                         </div>
