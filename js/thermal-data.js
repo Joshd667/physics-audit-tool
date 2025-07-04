@@ -1,6 +1,6 @@
 // js/thermal-data.js
 export const thermalData = {
-    thermal_energy: {
+    thermal_energy_transfer: {
         title: "3.6.2.1 Thermal Energy Transfer",
         paper: "Paper 2",
         icon: "settings",
