@@ -1,7 +1,7 @@
 // js/magnetic-fields-data.js
 export const magneticFieldsData = {
     magnetic_forces: {
-        title: "3.7.5.1-2 Magnetic Forces",
+        title: "3.7.5a Magnetic Forces",
         paper: "Paper 2",
         icon: "settings",
         topics: [
@@ -12,7 +12,7 @@ export const magneticFieldsData = {
         ]
     },
     electromagnetic_induction: {
-        title: "3.7.5.3-4 Electromagnetic Induction",
+        title: "3.7.5b Electromagnetic Induction",
         paper: "Paper 2",
         icon: "settings",
         topics: [
@@ -24,7 +24,7 @@ export const magneticFieldsData = {
         ]
     },
     ac_transformers: {
-        title: "3.7.5.5-6 AC & Transformers",
+        title: "3.7.5c AC & Transformers",
         paper: "Paper 2",
         icon: "settings",
         topics: [
