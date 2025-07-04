@@ -1,7 +1,7 @@
 // js/nuclear-data.js
 export const nuclearData = {
     radioactivity: {
-        title: "3.8.1.1-3 Radioactivity",
+        title: "3.8a Radioactivity",
         paper: "Paper 2",
         icon: "shield",
         topics: [
@@ -15,8 +15,8 @@ export const nuclearData = {
             { id: "3.8.1.3d", title: "Half-life", prompt: "Can you define half-life (T½) and use the relationship T½ = ln(2)/λ to solve problems?" }
         ]
     },
-    nuclear_structure: {
-        title: "3.8.1.4-6 Nuclear Structure & Energy",
+    nuclear_structure_energy: {
+        title: "3.8.1b Nuclear Structure & Energy",
         paper: "Paper 2",
         icon: "shield",
         topics: [
@@ -29,8 +29,8 @@ export const nuclearData = {
             { id: "3.8.1.6c", title: "Fission and fusion", prompt: "Do you understand the concept of binding energy per nucleon and how it relates to energy release in nuclear fission and fusion? Can you interpret the binding energy per nucleon curve?" }
         ]
     },
-    nuclear_applications: {
-        title: "3.8.1.7-8 Nuclear Applications & Safety",
+    nuclear_applications_safety: {
+        title: "3.8.1c Nuclear Applications & Safety",
         paper: "Paper 2",
         icon: "shield",
         topics: [
