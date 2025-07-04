@@ -1,22 +1,29 @@
 // js/mechanics-data.js
 export const mechanicsData = {
-    mechanics_forces: {
-        title: "3.4.1 Forces & Equilibrium",
+    vectors_scalars: {
+        title: "3.4.1a Vectors & Scalars",
         paper: "Paper 1",
         icon: "target",
         topics: [
             { id: "3.4.1.1a", title: "Scalars vs vectors", prompt: "Can you clearly distinguish between scalar quantities (magnitude only) and vector quantities (magnitude and direction)? Can you provide examples of each (e.g., speed vs velocity)?" },
             { id: "3.4.1.1b", title: "Vector addition", prompt: "Are you able to add two or more vectors, either by using a scale drawing (tip-to-tail method) or by calculation (e.g., using trigonometry for perpendicular vectors)?" },
             { id: "3.4.1.1c", title: "Vector resolution", prompt: "Can you resolve a vector into two perpendicular components? For example, can you find the horizontal and vertical components of a velocity vector at an angle?" },
-            { id: "3.4.1.1d", title: "Equilibrium conditions", prompt: "For an object in equilibrium, can you state and apply the two conditions: the net force is zero, and the net moment about any point is zero?" },
+            { id: "3.4.1.1d", title: "Equilibrium conditions", prompt: "For an object in equilibrium, can you state and apply the two conditions: the net force is zero, and the net moment about any point is zero?" }
+        ]
+    },
+    moments: {
+        title: "3.4.1b Moments",
+        paper: "Paper 1",
+        icon: "target",
+        topics: [
             { id: "3.4.1.2a", title: "Moment definition", prompt: "Can you define the moment of a force and calculate it using the formula: moment = force × perpendicular distance from the pivot?" },
             { id: "3.4.1.2b", title: "Couples", prompt: "Do you understand what a couple is (a pair of equal and opposite forces not acting along the same line)? Can you calculate the torque of a couple?" },
             { id: "3.4.1.2c", title: "Principle of moments", prompt: "Can you state and apply the principle of moments (for equilibrium, the sum of clockwise moments equals the sum of anticlockwise moments) to solve problems with levers and beams?" },
             { id: "3.4.1.2d", title: "Centre of mass", prompt: "Can you define the centre of mass of an object? Can you explain how to find the centre of mass of a simple shape experimentally?" }
         ]
     },
-    mechanics_motion: {
-        title: "3.4.1 Motion & Kinematics",
+    motion_kinematics: {
+        title: "3.4.1c Motion & Kinematics",
         paper: "Paper 1",
         icon: "target",
         topics: [
@@ -29,8 +36,8 @@ export const mechanicsData = {
             { id: "3.4.1.4c", title: "Terminal velocity", prompt: "Can you explain the concept of terminal velocity for a falling object, describing how the forces of weight and air resistance change as the object accelerates?" }
         ]
     },
-    mechanics_dynamics: {
-        title: "3.4.1 Dynamics & Energy",
+    dynamics: {
+        title: "3.4.1d Dynamics",
         paper: "Paper 1",
         icon: "target",
         topics: [
@@ -40,7 +47,14 @@ export const mechanicsData = {
             { id: "3.4.1.6a", title: "Momentum definition", prompt: "Can you define momentum as the product of mass and velocity (p = mv) and recognise that it is a vector quantity?" },
             { id: "3.4.1.6b", title: "Conservation of momentum", prompt: "Can you state the principle of conservation of linear momentum and apply it to analyze collisions and explosions in one and two dimensions?" },
             { id: "3.4.1.6c", title: "Impulse", prompt: "Can you define impulse as the change in momentum (Ft = Δ(mv)) and relate it to the area under a force-time graph?" },
-            { id: "3.4.1.6d", title: "Elastic vs inelastic collisions", prompt: "Can you distinguish between elastic collisions (kinetic energy is conserved) and inelastic collisions (kinetic energy is not conserved)? Can you solve problems for both types?" },
+            { id: "3.4.1.6d", title: "Elastic vs inelastic collisions", prompt: "Can you distinguish between elastic collisions (kinetic energy is conserved) and inelastic collisions (kinetic energy is not conserved)? Can you solve problems for both types?" }
+        ]
+    },
+    energy: {
+        title: "3.4.1e Energy",
+        paper: "Paper 1",
+        icon: "target",
+        topics: [
             { id: "3.4.1.7a", title: "Work done", prompt: "Can you define work done as the product of force and distance moved in the direction of the force? Can you use the formula W = Fs cos(θ)?" },
             { id: "3.4.1.7b", title: "Power", prompt: "Can you define power as the rate of doing work or transferring energy? Can you use the equations P = W/t and P = Fv?" },
             { id: "3.4.1.7c", title: "Efficiency", prompt: "Can you calculate the efficiency of a system using the formula: efficiency = (useful energy output / total energy input) × 100%?" },
