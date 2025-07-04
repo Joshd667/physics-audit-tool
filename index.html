@@ -5,13 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Physics Knowledge Audit Tool (Alpine.js)</title>
     
+    <!-- Tailwind CSS should be in the head -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
     <link rel="stylesheet" href="css/style.css">
     
-    <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
-    <!-- IMPORTANT: Add type="module" to enable ES6 modules -->
+    <!-- IMPORTANT: This must load before Alpine initializes -->
     <script src="js/main.js" type="module"></script>
 </head>
 <body>
