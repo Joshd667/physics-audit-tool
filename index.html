@@ -63,17 +63,10 @@
                 this.darkMode = localStorage.getItem('darkMode') === 'true';
                 this.applyDarkMode();
                 
-                // Set up watchers with proper icon refreshing
-                this.$watch('sidebarVisible', () => {
-                    setTimeout(() => lucide.createIcons(), 100);
-                });
-                this.$watch('activeSection', () => {
-                    setTimeout(() => lucide.createIcons(), 100);
-                });
+                // Set up watchers without excessive icon refreshing
                 this.$watch('darkMode', () => {
                     this.applyDarkMode();
                     localStorage.setItem('darkMode', this.darkMode);
-                    setTimeout(() => lucide.createIcons(), 100);
                 });
                 this.$watch('viewMode', () => {
                     if (this.viewMode === 'spec') {
@@ -84,11 +77,10 @@
                     // Reset to first available section
                     const firstItem = this.currentGroups[0];
                     this.activeSection = firstItem.type === 'single' ? firstItem.key : firstItem.sections[0];
-                    setTimeout(() => lucide.createIcons(), 100);
                 });
                 
-                // Initial icon creation
-                setTimeout(() => lucide.createIcons(), 100);
+                // Single icon creation after initialization
+                this.$nextTick(() => lucide.createIcons());
             },
 
             applyDarkMode() {
@@ -348,9 +340,9 @@
                                         <!-- Learning Objectives Section (Collapsible) -->
                                         <div class="mb-3" x-data="{ objectivesOpen: false }">
                                             <template x-if="topic.learningObjectives && topic.learningObjectives.length > 0">
-                                                <button @click="objectivesOpen = !objectivesOpen; $nextTick(() => lucide.createIcons())" class="flex items-center justify-between w-full text-left mb-1">
+                                                <button @click="objectivesOpen = !objectivesOpen" class="flex items-center justify-between w-full text-left mb-1">
                                                     <h5 class="font-bold text-xs text-gray-700 dark:text-gray-300">Learning Objectives</h5>
-                                                    <i data-lucide="chevron-down" :class="objectivesOpen ? 'rotate-180' : ''" class="w-3 h-3 text-gray-500 transition-transform"></i>
+                                                    <span class="text-gray-500 text-sm transition-transform duration-200" :class="objectivesOpen ? 'rotate-180' : ''">▼</span>
                                                 </button>
                                             </template>
                                             <template x-if="!topic.learningObjectives || topic.learningObjectives.length === 0">
@@ -376,9 +368,9 @@
                                         <!-- Examples Section (Collapsible) -->
                                         <div class="mb-3" x-data="{ examplesOpen: false }">
                                             <template x-if="topic.examples && topic.examples.length > 0">
-                                                <button @click="examplesOpen = !examplesOpen; $nextTick(() => lucide.createIcons())" class="flex items-center justify-between w-full text-left mb-1">
+                                                <button @click="examplesOpen = !examplesOpen" class="flex items-center justify-between w-full text-left mb-1">
                                                     <h5 class="font-bold text-xs text-gray-700 dark:text-gray-300">Examples</h5>
-                                                    <i data-lucide="chevron-down" :class="examplesOpen ? 'rotate-180' : ''" class="w-3 h-3 text-gray-500 transition-transform"></i>
+                                                    <span class="text-gray-500 text-sm transition-transform duration-200" :class="examplesOpen ? 'rotate-180' : ''">▼</span>
                                                 </button>
                                             </template>
                                             <template x-if="!topic.examples || topic.examples.length === 0">
@@ -404,9 +396,9 @@
                                         <!-- Resources Section (Collapsible) -->
                                         <div class="mb-3" x-data="{ resourcesOpen: false }">
                                             <template x-if="topic.resources && topic.resources.length > 0">
-                                                <button @click="resourcesOpen = !resourcesOpen; $nextTick(() => lucide.createIcons())" class="flex items-center justify-between w-full text-left mb-1">
+                                                <button @click="resourcesOpen = !resourcesOpen" class="flex items-center justify-between w-full text-left mb-1">
                                                     <h5 class="font-bold text-xs text-gray-700 dark:text-gray-300">Resources</h5>
-                                                    <i data-lucide="chevron-down" :class="resourcesOpen ? 'rotate-180' : ''" class="w-3 h-3 text-gray-500 transition-transform"></i>
+                                                    <span class="text-gray-500 text-sm transition-transform duration-200" :class="resourcesOpen ? 'rotate-180' : ''">▼</span>
                                                 </button>
                                             </template>
                                             <template x-if="!topic.resources || topic.resources.length === 0">
