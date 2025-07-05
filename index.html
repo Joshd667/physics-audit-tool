@@ -134,6 +134,11 @@
             
             setSelectedPaper(paper) {
                 this.selectedPaper = paper;
+                this.viewMode = 'paper'; // Always switch to paper mode when paper is selected
+                this.collapseAllDropdowns();
+                this.showingMainMenu = true; // Show main menu for the selected paper
+                this.showingSpecificSection = false;
+                this.lastExpandedGroup = null;
                 const firstItem = this.currentGroups[0];
                 this.activeSection = firstItem.type === 'single' ? firstItem.key : firstItem.sections[0];
             },
@@ -453,7 +458,7 @@
                                         <div :class="viewMode === 'paper' && selectedPaper === paper ? 'bg-blue-600' : 'bg-slate-500'" class="h-1.5 rounded-full transition-all duration-300" :style="`width: ${getPaperProgress(paper)}%`"></div>
                                     </div>
                                     <div class="flex items-center justify-between text-xs">
-                                        <span :class="viewMode === 'paper' && selectedPaper === paper ? 'text-blue-700 dark:text-blue-300' : 'text-slate-600 dark:text-slate-400'">Avg. Confidence</span>
+                                        <span :class="viewMode === 'paper' && selectedPaper === paper ? 'text-blue-700 dark:text-blue-300' : 'text-slate-600 dark:text-slate-400'">Confidence</span>
                                         <span :class="viewMode === 'paper' && selectedPaper === paper ? 'text-blue-800 dark:text-blue-200' : 'text-slate-800 dark:text-slate-200'" class="font-medium" x-text="`${getPaperAverageConfidence(paper).toFixed(1)}/5`"></span>
                                     </div>
                                     <div class="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-1.5">
