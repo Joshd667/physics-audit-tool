@@ -64,6 +64,9 @@
             
             // --- METHODS ---
             init() {
+                // Load saved confidence levels from localStorage
+                this.loadSavedData();
+                
                 // Initialize dark mode from localStorage or system preference
                 const savedDarkMode = localStorage.getItem('darkMode');
                 if (savedDarkMode !== null) {
@@ -117,6 +120,11 @@
                         this.activeSection = firstItem.type === 'single' ? firstItem.key : firstItem.sections[0];
                     }
                 });
+                
+                // Watch for confidence level changes and auto-save
+                this.$watch('confidenceLevels', () => {
+                    this.saveData();
+                }, { deep: true });
                 
                 // Re-create icons when content changes
                 this.$watch('activeSection', () => {
@@ -178,6 +186,81 @@
             
             updateConfidence(topicId, level) {
                 this.confidenceLevels[topicId] = level;
+                // Auto-save whenever confidence is updated
+                this.saveData();
+            },
+            
+            saveData() {
+                const dataToSave = {
+                    confidenceLevels: this.confidenceLevels,
+                    lastUpdated: new Date().toISOString(),
+                    version: "1.0"
+                };
+                localStorage.setItem('physicsAuditData', JSON.stringify(dataToSave));
+            },
+            
+            loadSavedData() {
+                try {
+                    const savedData = localStorage.getItem('physicsAuditData');
+                    if (savedData) {
+                        const parsed = JSON.parse(savedData);
+                        this.confidenceLevels = parsed.confidenceLevels || {};
+                        console.log('Loaded saved data from:', parsed.lastUpdated);
+                    }
+                } catch (error) {
+                    console.warn('Could not load saved data:', error);
+                    this.confidenceLevels = {};
+                }
+            },
+            
+            clearAllData() {
+                if (confirm('Are you sure you want to clear ALL your confidence ratings? This cannot be undone.')) {
+                    this.confidenceLevels = {};
+                    localStorage.removeItem('physicsAuditData');
+                    alert('All data has been cleared.');
+                }
+            },
+            
+            exportDataBackup() {
+                const dataToExport = {
+                    confidenceLevels: this.confidenceLevels,
+                    exportDate: new Date().toISOString(),
+                    version: "1.0"
+                };
+                
+                const dataStr = JSON.stringify(dataToExport, null, 2);
+                const blob = new Blob([dataStr], { type: 'application/json' });
+                const link = document.createElement('a');
+                link.href = URL.createObjectURL(blob);
+                link.download = `physics-audit-backup-${new Date().toISOString().split('T')[0]}.json`;
+                link.click();
+                URL.revokeObjectURL(link.href);
+            },
+            
+            importDataBackup(event) {
+                const file = event.target.files[0];
+                if (!file) return;
+                
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    try {
+                        const importedData = JSON.parse(e.target.result);
+                        if (importedData.confidenceLevels) {
+                            if (confirm('This will replace your current confidence ratings. Are you sure?')) {
+                                this.confidenceLevels = importedData.confidenceLevels;
+                                this.saveData();
+                                alert('Data imported successfully!');
+                            }
+                        } else {
+                            alert('Invalid backup file format.');
+                        }
+                    } catch (error) {
+                        alert('Error reading backup file: ' + error.message);
+                    }
+                };
+                reader.readAsText(file);
+                // Reset the input
+                event.target.value = '';
             },
             
             selectSection(sectionKey) {
@@ -607,10 +690,45 @@
                     </template>
                 </div>
                 <div class="p-4 border-t border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800">
-                    <button @click="exportResults" class="w-full flex items-center justify-center space-x-2 bg-green-600 hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-600 text-white px-4 py-2 rounded-lg transition-colors">
-                        <i data-lucide="download" class="w-4 h-4"></i>
-                        <span>Export Results</span>
-                    </button>
+                    <!-- Data Management Section -->
+                    <div class="mb-4" x-data="{ showDataOptions: false }">
+                        <button @click="showDataOptions = !showDataOptions" class="w-full flex items-center justify-between space-x-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 px-4 py-2 rounded-lg transition-colors">
+                            <div class="flex items-center space-x-2">
+                                <i data-lucide="database" class="w-4 h-4"></i>
+                                <span>Data Management</span>
+                            </div>
+                            <i data-lucide="chevron-down" :class="showDataOptions ? 'rotate-180' : ''" class="w-4 h-4 transition-transform"></i>
+                        </button>
+                        
+                        <div x-show="showDataOptions" x-transition class="mt-2 space-y-2">
+                            <!-- Export CSV -->
+                            <button @click="exportResults" class="w-full flex items-center justify-center space-x-2 bg-green-600 hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-600 text-white px-3 py-2 rounded text-sm transition-colors">
+                                <i data-lucide="download" class="w-4 h-4"></i>
+                                <span>Export CSV</span>
+                            </button>
+                            
+                            <!-- Backup Data -->
+                            <button @click="exportDataBackup" class="w-full flex items-center justify-center space-x-2 bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white px-3 py-2 rounded text-sm transition-colors">
+                                <i data-lucide="shield" class="w-4 h-4"></i>
+                                <span>Backup Data</span>
+                            </button>
+                            
+                            <!-- Import Data -->
+                            <div class="relative">
+                                <input type="file" accept=".json" @change="importDataBackup" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer" id="importFile">
+                                <label for="importFile" class="w-full flex items-center justify-center space-x-2 bg-purple-600 hover:bg-purple-700 dark:bg-purple-700 dark:hover:bg-purple-600 text-white px-3 py-2 rounded text-sm transition-colors cursor-pointer">
+                                    <i data-lucide="upload" class="w-4 h-4"></i>
+                                    <span>Import Backup</span>
+                                </label>
+                            </div>
+                            
+                            <!-- Clear Data -->
+                            <button @click="clearAllData" class="w-full flex items-center justify-center space-x-2 bg-red-600 hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-600 text-white px-3 py-2 rounded text-sm transition-colors">
+                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                <span>Clear All Data</span>
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
             
