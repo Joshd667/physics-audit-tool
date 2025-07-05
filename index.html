@@ -124,10 +124,6 @@
 
             toggleViewMode() {
                 this.viewMode = this.viewMode === 'paper' ? 'spec' : 'paper';
-                this.collapseAllDropdowns();
-                this.showingMainMenu = true; // Always show main menu when switching modes
-                this.showingSpecificSection = false;
-                this.lastExpandedGroup = null;
             },
 
             toggleDarkMode() {
@@ -138,11 +134,6 @@
             
             setSelectedPaper(paper) {
                 this.selectedPaper = paper;
-                this.viewMode = 'paper'; // Always switch to paper mode when paper is selected
-                this.collapseAllDropdowns();
-                this.showingMainMenu = true; // Show main menu for the selected paper
-                this.showingSpecificSection = false;
-                this.lastExpandedGroup = null;
                 const firstItem = this.currentGroups[0];
                 this.activeSection = firstItem.type === 'single' ? firstItem.key : firstItem.sections[0];
             },
@@ -309,12 +300,6 @@
                 return (relevantLevels.reduce((sum, level) => sum + level, 0) / relevantLevels.length);
             },
             
-            getGroupProgress(sections) {
-                const totalTopics = this.getGroupTotalTopics(sections);
-                const assessedTopics = this.getGroupAssessedCount(sections);
-                return totalTopics > 0 ? Math.round((assessedTopics / totalTopics) * 100) : 0;
-            },,
-            
             getGroupTotalTopics(sections) {
                 return sections.reduce((sum, key) => sum + this.specificationData[key].topics.length, 0);
             },
@@ -468,7 +453,7 @@
                                         <div :class="viewMode === 'paper' && selectedPaper === paper ? 'bg-blue-600' : 'bg-slate-500'" class="h-1.5 rounded-full transition-all duration-300" :style="`width: ${getPaperProgress(paper)}%`"></div>
                                     </div>
                                     <div class="flex items-center justify-between text-xs">
-                                        <span :class="viewMode === 'paper' && selectedPaper === paper ? 'text-blue-700 dark:text-blue-300' : 'text-slate-600 dark:text-slate-400'">Confidence</span>
+                                        <span :class="viewMode === 'paper' && selectedPaper === paper ? 'text-blue-700 dark:text-blue-300' : 'text-slate-600 dark:text-slate-400'">Avg. Confidence</span>
                                         <span :class="viewMode === 'paper' && selectedPaper === paper ? 'text-blue-800 dark:text-blue-200' : 'text-slate-800 dark:text-slate-200'" class="font-medium" x-text="`${getPaperAverageConfidence(paper).toFixed(1)}/5`"></span>
                                     </div>
                                     <div class="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-1.5">
@@ -638,10 +623,10 @@
                                         <div class="text-sm text-gray-600 dark:text-gray-400 mt-auto">
                                             <div class="flex items-center justify-between mb-2">
                                                 <span>Progress</span>
-                                                <span x-text="`${getGroupProgress(group.sections)}%`"></span>
+                                                <span x-text="`${Math.round((getGroupAssessedCount(group.sections) / getGroupTotalTopics(group.sections)) * 100)}%`"></span>
                                             </div>
                                             <div class="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2 mb-3">
-                                                <div class="bg-blue-600 h-2 rounded-full transition-all duration-300" :style="`width: ${getGroupProgress(group.sections)}%`"></div>
+                                                <div class="bg-blue-600 h-2 rounded-full transition-all duration-300" :style="`width: ${Math.round((getGroupAssessedCount(group.sections) / getGroupTotalTopics(group.sections)) * 100)}%`"></div>
                                             </div>
                                             <div class="flex items-center justify-between mb-2">
                                                 <span>Avg. Confidence</span>
