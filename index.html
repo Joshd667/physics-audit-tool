@@ -105,9 +105,17 @@
                     this.activeSection = firstItem.type === 'single' ? firstItem.key : firstItem.sections[0];
                 });
                 
-                // Single icon creation after initialization and when content changes
-                this.$nextTick(() => {
-                    lucide.createIcons();
+                this.$watch('selectedPaper', () => {
+                    this.collapseAllDropdowns();
+                    this.showingMainMenu = true;
+                    this.showingSpecificSection = false;
+                    this.lastExpandedGroup = null;
+                    
+                    // Reset to first available section
+                    const firstItem = this.currentGroups[0];
+                    if (firstItem) {
+                        this.activeSection = firstItem.type === 'single' ? firstItem.key : firstItem.sections[0];
+                    }
                 });
                 
                 // Re-create icons when content changes
@@ -116,6 +124,11 @@
                 });
                 this.$watch('currentGroups', () => {
                     this.$nextTick(() => lucide.createIcons());
+                });
+                
+                // Single icon creation after initialization and when content changes
+                this.$nextTick(() => {
+                    lucide.createIcons();
                 });
             },
 
@@ -129,7 +142,19 @@
 
             toggleViewMode() {
                 this.viewMode = this.viewMode === 'paper' ? 'spec' : 'paper';
-                console.log('View mode changed to:', this.viewMode);
+                this.collapseAllDropdowns();
+                this.showingMainMenu = true;
+                this.showingSpecificSection = false;
+                this.lastExpandedGroup = null;
+                
+                if (this.viewMode === 'spec') {
+                    this.selectedPaper = 'All Topics';
+                } else {
+                    this.selectedPaper = 'Paper 1';
+                }
+                // Reset to first available section
+                const firstItem = this.currentGroups[0];
+                this.activeSection = firstItem.type === 'single' ? firstItem.key : firstItem.sections[0];
             },
 
             toggleDarkMode() {
@@ -145,7 +170,10 @@
                 this.showingMainMenu = true;
                 this.showingSpecificSection = false;
                 this.lastExpandedGroup = null;
-                console.log('Paper selected:', paper, 'Main menu:', this.showingMainMenu);
+            },
+            
+            collapseAllDropdowns() {
+                this.expandedGroups = {};
             },
             
             updateConfidence(topicId, level) {
@@ -264,6 +292,17 @@
                 const assessedTopics = Object.keys(this.confidenceLevels).length;
                 return totalTopics > 0 ? Math.round((assessedTopics / totalTopics) * 100) : 0;
             },
+            
+            getOverallConfidenceAllPapers() {
+                // Calculate average confidence across ALL papers
+                const allSections = Object.entries(this.specificationData);
+                const relevantLevels = Object.entries(this.confidenceLevels).filter(([id, _]) => 
+                    allSections.some(([_, section]) => section.topics.some(topic => topic.id === id))
+                ).map(([_, level]) => level);
+                
+                if (relevantLevels.length === 0) return 0;
+                return relevantLevels.reduce((sum, level) => sum + level, 0) / relevantLevels.length;
+            },
                         
             getPaperAverageConfidence(paper) {
                 const paperSections = Object.entries(this.specificationData).filter(([_, section]) => section.paper === paper);
@@ -318,6 +357,18 @@
             
             getGroupTotalTopics(sections) {
                 return sections.reduce((sum, key) => sum + this.specificationData[key].topics.length, 0);
+            },
+            
+            getGroupAssessedCount(sections) {
+                let assessedCount = 0;
+                sections.forEach(key => {
+                    this.specificationData[key].topics.forEach(topic => {
+                        if (this.confidenceLevels[topic.id]) {
+                            assessedCount++;
+                        }
+                    });
+                });
+                return assessedCount;
             },
             
             getConfidenceColor(confidence) {
@@ -448,7 +499,7 @@
                     <div class="flex space-x-2 mb-4">
                         <template x-for="paper in ['Paper 1', 'Paper 2']" :key="paper">
                             <div class="flex-1">
-                                <button @click="if (viewMode === 'spec') { toggleViewMode(); setSelectedPaper(paper); } else { setSelectedPaper(paper); }" 
+                                <button @click="setSelectedPaper(paper)" 
                                         :class="viewMode === 'paper' && selectedPaper === paper ? 'bg-blue-600 text-white shadow' : 'bg-white/60 dark:bg-gray-700/60 text-slate-700 dark:text-slate-300 hover:bg-white/80 dark:hover:bg-gray-600/80'" 
                                         class="w-full px-3 py-2 rounded text-sm font-medium transition-colors" 
                                         x-text="paper"></button>
@@ -818,8 +869,6 @@
                                             <template x-if="topic.resources && topic.resources.length > 0">
                                                 <button @click="resourcesOpen = !resourcesOpen" class="flex items-center justify-between w-full text-left mb-1">
                                                     <h5 class="font-bold text-xs text-gray-700 dark:text-gray-300">Resources</h5>
-                                                    <svg class="w-3 h-3 transition-transform duration-200 text-gray-400 dark:text-gray-500" :class="resourcesOpen ? 'rotate-90' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                                                     </svg>
                                                 </button>
                                             </template>
