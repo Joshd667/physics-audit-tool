@@ -29,6 +29,7 @@
             viewMode: 'paper', // 'paper' or 'spec'
             // Track which group was last expanded for section cards
             lastExpandedGroup: null,
+            showingSpecificSection: false,
             
             // --- DATA ---
             
@@ -131,14 +132,15 @@
             selectSection(sectionKey) {
                 this.activeSection = sectionKey;
                 
-                // When a section is selected, hide the group cards to show specific section topics
-                // But keep track of which group this section belongs to
+                // When a section is selected, show its topics (hide group cards)
+                this.showingSpecificSection = true;
+                
+                // Ensure the group containing this section is expanded in sidebar and set as last clicked
                 const parentGroup = this.currentGroups.find(item => 
                     item.type === "group" && item.sections.includes(sectionKey)
                 );
                 
                 if (parentGroup) {
-                    // Keep the parent group as the last expanded for back button functionality
                     this.lastExpandedGroup = parentGroup.title;
                     this.expandedGroups[parentGroup.title] = true;
                 }
@@ -152,6 +154,9 @@
             toggleGroup(groupTitle) {
                 // Always set this as the last clicked group, regardless of expanding/collapsing
                 this.lastExpandedGroup = groupTitle;
+                
+                // When clicking a group, show group cards (not specific section)
+                this.showingSpecificSection = false;
                 
                 // Then toggle the expansion state
                 this.expandedGroups[groupTitle] = !this.expandedGroups[groupTitle];
@@ -259,8 +264,8 @@
             },
             
             showSectionCards() {
-                // Show section cards if we have a last clicked group
-                return this.lastExpandedGroup !== null;
+                // Show section cards if we have a last clicked group AND we're not viewing a specific section
+                return this.lastExpandedGroup !== null && !this.showingSpecificSection;
             },
             
             getCurrentGroupSections() {
@@ -280,8 +285,8 @@
             },
             
             goBackToGroupCards() {
-                // Reset to show group cards instead of specific section
-                this.lastExpandedGroup = this.getCurrentGroupForSection();
+                // Go back to showing group cards instead of specific section
+                this.showingSpecificSection = false;
             },
             
             getCurrentGroupForSection() {
