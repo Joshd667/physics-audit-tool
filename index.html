@@ -59,8 +59,14 @@
             
             // --- METHODS ---
             init() {
-                // Initialize dark mode from localStorage
-                this.darkMode = localStorage.getItem('darkMode') === 'true';
+                // Initialize dark mode from localStorage or system preference
+                const savedDarkMode = localStorage.getItem('darkMode');
+                if (savedDarkMode !== null) {
+                    this.darkMode = savedDarkMode === 'true';
+                } else {
+                    // Use system preference if no saved preference
+                    this.darkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                }
                 this.applyDarkMode();
                 
                 // Set sidebar visible by default (always open on init)
@@ -201,8 +207,48 @@
                 return sections.reduce((sum, key) => sum + this.specificationData[key].topics.length, 0);
             },
             
-            getGroupAssessedCount(sections) {
-                return sections.reduce((sum, key) => sum + this.getAssessedCount(this.specificationData[key].topics), 0);
+            getConfidenceColor(confidence) {
+                if (confidence === 0) return 'bg-gray-300';
+                // Smooth gradient from red (1) to green (5)
+                const colors = [
+                    'bg-red-500',      // 1
+                    'bg-orange-500',   // 2
+                    'bg-yellow-500',   // 3
+                    'bg-blue-500',     // 4
+                    'bg-green-500'     // 5
+                ];
+                return colors[confidence - 1] || 'bg-gray-300';
+            },
+            
+            getConfidenceBarStyle(confidence) {
+                if (confidence === 0) return 'background: #d1d5db';
+                
+                // Create smooth gradient based on confidence level
+                const red = Math.max(0, 255 - ((confidence - 1) * 63.75));
+                const green = Math.min(255, (confidence - 1) * 63.75);
+                const blue = 0;
+                
+                return `background: rgb(${Math.round(red)}, ${Math.round(green)}, ${blue})`;
+            },
+            
+            showSectionCards() {
+                // Check if we're viewing a group that should show cards
+                const currentItem = this.currentGroups.find(item => 
+                    item.type === 'group' && this.expandedGroups[item.title] && 
+                    item.sections.includes(this.activeSection)
+                );
+                return !!currentItem;
+            },
+            
+            getCurrentGroupSections() {
+                const currentItem = this.currentGroups.find(item => 
+                    item.type === 'group' && this.expandedGroups[item.title] && 
+                    item.sections.includes(this.activeSection)
+                );
+                return currentItem ? currentItem.sections.map(key => ({
+                    key,
+                    ...this.specificationData[key]
+                })) : [];
             }
         }));
         
@@ -258,10 +304,16 @@
                         <div class="bg-white/60 dark:bg-gray-700/60 backdrop-blur-sm p-2 rounded">
                             <div class="text-blue-700 dark:text-blue-400 font-medium">Progress</div>
                             <div class="text-blue-800 dark:text-blue-300 font-bold" x-text="`${getOverallProgress()}%`"></div>
+                            <div class="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2 mt-1">
+                                <div class="bg-blue-600 h-2 rounded-full transition-all duration-300" :style="`width: ${getOverallProgress()}%`"></div>
+                            </div>
                         </div>
                         <div class="bg-white/60 dark:bg-gray-700/60 backdrop-blur-sm p-2 rounded">
                             <div class="text-green-700 dark:text-green-400 font-medium">Avg. Confidence</div>
                             <div class="text-green-800 dark:text-green-300 font-bold" x-text="`${getAverageConfidence()}/5`"></div>
+                            <div class="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2 mt-1">
+                                <div class="h-2 rounded-full transition-all duration-300" :style="`width: ${(getAverageConfidence() / 5) * 100}%; ${getConfidenceBarStyle(Math.round(getAverageConfidence()))}`"></div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -276,11 +328,13 @@
                                         <div class="flex items-center space-x-2">
                                             <i :data-lucide="specificationData[item.key].icon" :class="activeSection === item.key ? 'text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-gray-400'" class="w-4 h-4"></i>
                                             <div>
-                                                <div class="text-sm font-medium" :class="activeSection === item.key ? 'text-blue-700 dark:text-blue-300' : 'text-gray-900 dark:text-gray-100'" x-text="specificationData[item.key].title"></div>
+                                                <div class="text-sm font-bold" :class="activeSection === item.key ? 'text-blue-700 dark:text-blue-300' : 'text-gray-900 dark:text-gray-100'" x-text="specificationData[item.key].title"></div>
                                                 <div class="text-xs text-gray-500 dark:text-gray-400 mt-1"><span x-text="getAssessedCount(specificationData[item.key].topics)"></span>/<span x-text="specificationData[item.key].topics.length"></span> assessed</div>
                                             </div>
                                         </div>
-                                        <i data-lucide="chevron-right" :class="activeSection === item.key ? 'text-blue-600 dark:text-blue-400' : 'text-gray-400 dark:text-gray-500'" class="w-4 h-4"></i>
+                                        <svg class="w-4 h-4 transition-transform duration-300" :class="activeSection === item.key ? 'text-blue-600 dark:text-blue-400' : 'text-gray-400 dark:text-gray-500'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                        </svg>
                                     </div>
                                 </button>
                             </template>
@@ -305,10 +359,12 @@
                                                 <button @click="selectSection(sectionKey)" :class="activeSection === sectionKey ? 'bg-blue-50 dark:bg-blue-900/50 border-l-4 border-l-blue-600 dark:border-l-blue-600' : 'border-l-4 border-l-transparent'" class="w-full p-3 pl-8 text-left border-b border-gray-100 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-300">
                                                     <div class="flex items-center justify-between">
                                                         <div>
-                                                            <div class="text-sm" :class="activeSection === sectionKey ? 'text-blue-700 dark:text-blue-300 font-medium' : 'text-gray-800 dark:text-gray-200'" x-text="specificationData[sectionKey].title"></div>
+                                                            <div class="text-sm font-bold" :class="activeSection === sectionKey ? 'text-blue-700 dark:text-blue-300' : 'text-gray-800 dark:text-gray-200'" x-text="specificationData[sectionKey].title"></div>
                                                             <div class="text-xs text-gray-500 dark:text-gray-400 mt-1"><span x-text="getAssessedCount(specificationData[sectionKey].topics)"></span>/<span x-text="specificationData[sectionKey].topics.length"></span> assessed</div>
                                                         </div>
-                                                        <i data-lucide="chevron-right" :class="activeSection === sectionKey ? 'text-blue-600 dark:text-blue-400' : 'text-gray-400 dark:text-gray-500'" class="w-3 h-3"></i>
+                                                        <svg class="w-3 h-3 transition-transform duration-300" :class="activeSection === sectionKey ? 'text-blue-600 dark:text-blue-400' : 'text-gray-400 dark:text-gray-500'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                                        </svg>
                                                     </div>
                                                 </button>
                                             </template>
@@ -338,7 +394,9 @@
                 <div class="p-4 flex items-center justify-between bg-white/30 dark:bg-gray-800/30 backdrop-blur-sm relative z-10">
                     <div class="flex items-center space-x-4">
                         <button @click.stop="sidebarVisible = !sidebarVisible" class="p-2 bg-white/60 dark:bg-gray-700/60 hover:bg-white/80 dark:hover:bg-gray-600/80 backdrop-blur-sm rounded-lg transition-colors">
-                            <i :data-lucide="sidebarVisible ? 'chevron-left' : 'menu'" class="w-5 h-5 text-slate-700 dark:text-slate-300"></i>
+                            <svg class="w-5 h-5 transition-transform duration-300" :class="sidebarVisible ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                            </svg>
                         </button>
                         <div x-show="currentSection" class="flex items-center space-x-2">
                             <i :data-lucide="currentSection.icon" class="w-5 h-5 text-blue-600 dark:text-blue-400"></i>
@@ -353,7 +411,38 @@
                 <div class="h-px bg-white/30 dark:bg-gray-600/30 backdrop-blur-sm"></div>
                 <div class="flex-1 overflow-y-auto bg-gray-50 dark:bg-gray-900 relative z-10">
                     <div class="p-6">
-                        <div x-show="currentSection" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
+                        <!-- Section Cards View -->
+                        <div x-show="showSectionCards()" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 transform scale-95 -translate-y-4" x-transition:enter-end="opacity-100 transform scale-100 translate-y-0">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+                                <template x-for="section in getCurrentGroupSections()" :key="section.key">
+                                    <div @click="selectSection(section.key)" class="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all cursor-pointer">
+                                        <h3 class="font-bold text-gray-800 dark:text-gray-200 mb-3" x-text="section.title"></h3>
+                                        <div class="text-sm text-gray-600 dark:text-gray-400 mb-3">
+                                            <div class="flex items-center justify-between mb-2">
+                                                <span>Progress</span>
+                                                <span x-text="`${Math.round((getAssessedCount(section.topics) / section.topics.length) * 100)}%`"></span>
+                                            </div>
+                                            <div class="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2 mb-3">
+                                                <div class="bg-blue-600 h-2 rounded-full transition-all duration-300" :style="`width: ${Math.round((getAssessedCount(section.topics) / section.topics.length) * 100)}%`"></div>
+                                            </div>
+                                            <div class="flex items-center justify-between mb-2">
+                                                <span>Avg. Confidence</span>
+                                                <span x-text="`${(section.topics.filter(t => confidenceLevels[t.id]).reduce((sum, t) => sum + confidenceLevels[t.id], 0) / Math.max(1, section.topics.filter(t => confidenceLevels[t.id]).length)).toFixed(1)}/5`"></span>
+                                            </div>
+                                            <div class="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2">
+                                                <div class="h-2 rounded-full transition-all duration-300" :style="`width: ${((section.topics.filter(t => confidenceLevels[t.id]).reduce((sum, t) => sum + confidenceLevels[t.id], 0) / Math.max(1, section.topics.filter(t => confidenceLevels[t.id]).length)) / 5) * 100}%; ${getConfidenceBarStyle(Math.round(section.topics.filter(t => confidenceLevels[t.id]).reduce((sum, t) => sum + confidenceLevels[t.id], 0) / Math.max(1, section.topics.filter(t => confidenceLevels[t.id]).length)))}`"></div>
+                                            </div>
+                                        </div>
+                                        <div class="text-xs text-gray-500 dark:text-gray-400">
+                                            <span x-text="`${section.topics.length} topics`"></span>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+
+                        <!-- Regular Topics View -->
+                        <div x-show="currentSection && !showSectionCards()" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 transform scale-95 -translate-y-4" x-transition:enter-end="opacity-100 transform scale-100 translate-y-0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
                             <template x-for="topic in currentSection.topics" :key="topic.id">
                                 <div class="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-shadow">
                                     <div class="mb-3">
@@ -366,7 +455,9 @@
                                             <template x-if="topic.learningObjectives && topic.learningObjectives.length > 0">
                                                 <button @click="objectivesOpen = !objectivesOpen" class="flex items-center justify-between w-full text-left mb-1">
                                                     <h5 class="font-bold text-xs text-gray-700 dark:text-gray-300">Learning Objectives</h5>
-                                                    <span class="text-gray-500 text-sm transition-transform duration-200" :class="objectivesOpen ? 'rotate-180' : ''">▼</span>
+                                                    <svg class="w-3 h-3 transition-transform duration-200" :class="objectivesOpen ? 'rotate-90' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                                    </svg>
                                                 </button>
                                             </template>
                                             <template x-if="!topic.learningObjectives || topic.learningObjectives.length === 0">
@@ -394,7 +485,9 @@
                                             <template x-if="topic.examples && topic.examples.length > 0">
                                                 <button @click="examplesOpen = !examplesOpen" class="flex items-center justify-between w-full text-left mb-1">
                                                     <h5 class="font-bold text-xs text-gray-700 dark:text-gray-300">Examples</h5>
-                                                    <span class="text-gray-500 text-sm transition-transform duration-200" :class="examplesOpen ? 'rotate-180' : ''">▼</span>
+                                                    <svg class="w-3 h-3 transition-transform duration-200" :class="examplesOpen ? 'rotate-90' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                                    </svg>
                                                 </button>
                                             </template>
                                             <template x-if="!topic.examples || topic.examples.length === 0">
@@ -422,7 +515,9 @@
                                             <template x-if="topic.resources && topic.resources.length > 0">
                                                 <button @click="resourcesOpen = !resourcesOpen" class="flex items-center justify-between w-full text-left mb-1">
                                                     <h5 class="font-bold text-xs text-gray-700 dark:text-gray-300">Resources</h5>
-                                                    <span class="text-gray-500 text-sm transition-transform duration-200" :class="resourcesOpen ? 'rotate-180' : ''">▼</span>
+                                                    <svg class="w-3 h-3 transition-transform duration-200" :class="resourcesOpen ? 'rotate-90' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                                    </svg>
                                                 </button>
                                             </template>
                                             <template x-if="!topic.resources || topic.resources.length === 0">
