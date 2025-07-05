@@ -3,7 +3,7 @@
 
 (async function() {
     try {
-        // Import all required modules with corrected paths
+
         const { specificationData, paperModeGroups, specModeGroups } = await import('./data.js');
         const { createPhysicsAuditTool } = await import('./physics-audit-tool.js');
         
