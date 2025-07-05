@@ -221,23 +221,36 @@
             },
             
             getConfidenceBarStyle(confidence) {
-                if (confidence === 0) return 'background: #d1d5db';
+                if (confidence === 0) return 'background: rgb(239, 68, 68)'; // Pure red for 0
                 
-                // Create smooth gradient based on confidence level
-                const red = Math.max(0, 255 - ((confidence - 1) * 63.75));
-                const green = Math.min(255, (confidence - 1) * 63.75);
-                const blue = 0;
+                // Create smooth gradient: 0=red, 2.5=orange, 5=green
+                let red, green, blue;
                 
-                return `background: rgb(${Math.round(red)}, ${Math.round(green)}, ${blue})`;
+                if (confidence <= 2.5) {
+                    // From red (239,68,68) to orange (249,115,22)
+                    const ratio = confidence / 2.5;
+                    red = 239 + (249 - 239) * ratio;
+                    green = 68 + (115 - 68) * ratio;
+                    blue = 68 + (22 - 68) * ratio;
+                } else {
+                    // From orange (249,115,22) to green (34,197,94)
+                    const ratio = (confidence - 2.5) / 2.5;
+                    red = 249 + (34 - 249) * ratio;
+                    green = 115 + (197 - 115) * ratio;
+                    blue = 22 + (94 - 22) * ratio;
+                }
+                
+                return `background: rgb(${Math.round(red)}, ${Math.round(green)}, ${Math.round(blue)})`;
             },
             
             showSectionCards() {
-                // Check if we're viewing a group that should show cards
+                // Show cards when a group is expanded and we're not viewing a specific topic section
                 const currentItem = this.currentGroups.find(item => 
-                    item.type === 'group' && this.expandedGroups[item.title] && 
-                    item.sections.includes(this.activeSection)
+                    item.type === 'group' && this.expandedGroups[item.title]
                 );
-                return !!currentItem;
+                
+                // Show cards if we have an expanded group and the active section is one of its sections
+                return currentItem && currentItem.sections.includes(this.activeSection);
             },
             
             getCurrentGroupSections() {
@@ -245,10 +258,13 @@
                     item.type === 'group' && this.expandedGroups[item.title] && 
                     item.sections.includes(this.activeSection)
                 );
-                return currentItem ? currentItem.sections.map(key => ({
+                
+                if (!currentItem) return [];
+                
+                return currentItem.sections.map(key => ({
                     key,
                     ...this.specificationData[key]
-                })) : [];
+                }));
             }
         }));
         
@@ -332,7 +348,7 @@
                                                 <div class="text-xs text-gray-500 dark:text-gray-400 mt-1"><span x-text="getAssessedCount(specificationData[item.key].topics)"></span>/<span x-text="specificationData[item.key].topics.length"></span> assessed</div>
                                             </div>
                                         </div>
-                                        <svg class="w-4 h-4 transition-transform duration-300" :class="activeSection === item.key ? 'text-blue-600 dark:text-blue-400' : 'text-gray-400 dark:text-gray-500'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <svg class="w-4 h-4 transition-transform duration-300 text-gray-400 dark:text-gray-500" :class="activeSection === item.key ? 'text-blue-600 dark:text-blue-400' : 'text-gray-400 dark:text-gray-500'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                                         </svg>
                                     </div>
@@ -359,10 +375,10 @@
                                                 <button @click="selectSection(sectionKey)" :class="activeSection === sectionKey ? 'bg-blue-50 dark:bg-blue-900/50 border-l-4 border-l-blue-600 dark:border-l-blue-600' : 'border-l-4 border-l-transparent'" class="w-full p-3 pl-8 text-left border-b border-gray-100 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-300">
                                                     <div class="flex items-center justify-between">
                                                         <div>
-                                                            <div class="text-sm font-bold" :class="activeSection === sectionKey ? 'text-blue-700 dark:text-blue-300' : 'text-gray-800 dark:text-gray-200'" x-text="specificationData[sectionKey].title"></div>
+                                                            <div class="text-sm" :class="activeSection === sectionKey ? 'text-blue-700 dark:text-blue-300 font-medium' : 'text-gray-800 dark:text-gray-200'" x-text="specificationData[sectionKey].title"></div>
                                                             <div class="text-xs text-gray-500 dark:text-gray-400 mt-1"><span x-text="getAssessedCount(specificationData[sectionKey].topics)"></span>/<span x-text="specificationData[sectionKey].topics.length"></span> assessed</div>
                                                         </div>
-                                                        <svg class="w-3 h-3 transition-transform duration-300" :class="activeSection === sectionKey ? 'text-blue-600 dark:text-blue-400' : 'text-gray-400 dark:text-gray-500'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <svg class="w-3 h-3 transition-transform duration-300 text-gray-400 dark:text-gray-500" :class="activeSection === sectionKey ? 'text-blue-600 dark:text-blue-400' : 'text-gray-400 dark:text-gray-500'" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                                                         </svg>
                                                     </div>
@@ -394,7 +410,7 @@
                 <div class="p-4 flex items-center justify-between bg-white/30 dark:bg-gray-800/30 backdrop-blur-sm relative z-10">
                     <div class="flex items-center space-x-4">
                         <button @click.stop="sidebarVisible = !sidebarVisible" class="p-2 bg-white/60 dark:bg-gray-700/60 hover:bg-white/80 dark:hover:bg-gray-600/80 backdrop-blur-sm rounded-lg transition-colors">
-                            <svg class="w-5 h-5 transition-transform duration-300" :class="sidebarVisible ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg class="w-5 h-5 transition-transform duration-300 text-gray-400 dark:text-gray-500" :class="sidebarVisible ? 'rotate-180' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                             </svg>
                         </button>
@@ -455,7 +471,7 @@
                                             <template x-if="topic.learningObjectives && topic.learningObjectives.length > 0">
                                                 <button @click="objectivesOpen = !objectivesOpen" class="flex items-center justify-between w-full text-left mb-1">
                                                     <h5 class="font-bold text-xs text-gray-700 dark:text-gray-300">Learning Objectives</h5>
-                                                    <svg class="w-3 h-3 transition-transform duration-200" :class="objectivesOpen ? 'rotate-90' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <svg class="w-3 h-3 transition-transform duration-200 text-gray-400 dark:text-gray-500" :class="objectivesOpen ? 'rotate-90' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                                                     </svg>
                                                 </button>
@@ -485,7 +501,7 @@
                                             <template x-if="topic.examples && topic.examples.length > 0">
                                                 <button @click="examplesOpen = !examplesOpen" class="flex items-center justify-between w-full text-left mb-1">
                                                     <h5 class="font-bold text-xs text-gray-700 dark:text-gray-300">Examples</h5>
-                                                    <svg class="w-3 h-3 transition-transform duration-200" :class="examplesOpen ? 'rotate-90' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <svg class="w-3 h-3 transition-transform duration-200 text-gray-400 dark:text-gray-500" :class="examplesOpen ? 'rotate-90' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                                                     </svg>
                                                 </button>
@@ -515,7 +531,7 @@
                                             <template x-if="topic.resources && topic.resources.length > 0">
                                                 <button @click="resourcesOpen = !resourcesOpen" class="flex items-center justify-between w-full text-left mb-1">
                                                     <h5 class="font-bold text-xs text-gray-700 dark:text-gray-300">Resources</h5>
-                                                    <svg class="w-3 h-3 transition-transform duration-200" :class="resourcesOpen ? 'rotate-90' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <svg class="w-3 h-3 transition-transform duration-200 text-gray-400 dark:text-gray-500" :class="resourcesOpen ? 'rotate-90' : ''" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
                                                     </svg>
                                                 </button>
