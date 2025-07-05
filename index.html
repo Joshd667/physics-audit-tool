@@ -244,6 +244,14 @@
                 return totalTopics > 0 ? Math.round((assessedTopics / totalTopics) * 100) : 0;
             },
             
+            getOverallProgressAllPapers() {
+                // Always calculate across ALL papers regardless of current mode
+                const allSections = Object.entries(this.specificationData);
+                const totalTopics = allSections.reduce((sum, [_, section]) => sum + section.topics.length, 0);
+                const assessedTopics = Object.keys(this.confidenceLevels).length;
+                return totalTopics > 0 ? Math.round((assessedTopics / totalTopics) * 100) : 0;
+            },
+            
             getPaperAverageConfidence(paper) {
                 const paperSections = Object.entries(this.specificationData).filter(([_, section]) => section.paper === paper);
                 const relevantLevels = Object.entries(this.confidenceLevels).filter(([id, _]) => 
@@ -378,33 +386,36 @@
                         </div>
                     </div>
                     
-                    <div class="mb-2">
-                        <span class="text-xs font-medium text-slate-600 dark:text-slate-400" x-text="viewMode === 'paper' ? 'Paper Mode' : 'Spec Mode'"></span>
+                    <div class="mb-4">
+                        <span class="text-sm font-bold text-slate-600 dark:text-slate-400" x-text="viewMode === 'paper' ? 'Paper Mode' : 'Spec Mode'"></span>
                     </div>
                     
-                    <div class="flex space-x-2 mb-4" x-show="viewMode === 'paper'">
-                        <template x-for="paper in availablePapers" :key="paper">
+                    <div class="flex space-x-2 mb-4">
+                        <template x-for="paper in ['Paper 1', 'Paper 2']" :key="paper">
                             <div class="flex-1">
-                                <button @click="setSelectedPaper(paper)" :class="selectedPaper === paper ? 'bg-blue-600 text-white shadow' : 'bg-white/60 dark:bg-gray-700/60 text-slate-700 dark:text-slate-300 hover:bg-white/80 dark:hover:bg-gray-600/80'" class="w-full px-3 py-2 rounded text-sm font-medium transition-colors" x-text="paper"></button>
+                                <button @click="viewMode === 'spec' ? (viewMode = 'paper', setSelectedPaper(paper)) : setSelectedPaper(paper)" 
+                                        :class="viewMode === 'paper' && selectedPaper === paper ? 'bg-blue-600 text-white shadow' : 'bg-white/60 dark:bg-gray-700/60 text-slate-700 dark:text-slate-300 hover:bg-white/80 dark:hover:bg-gray-600/80'" 
+                                        class="w-full px-3 py-2 rounded text-sm font-medium transition-colors" 
+                                        x-text="paper"></button>
                             </div>
                         </template>
                     </div>
                     
                     <!-- Progress bars for both papers -->
-                    <div class="grid grid-cols-2 gap-2 mb-4" x-show="viewMode === 'paper'">
-                        <template x-for="(paper, index) in availablePapers" :key="paper">
-                            <div :class="selectedPaper === paper ? 'bg-blue-600/20 border-blue-600/30' : 'bg-white/40 dark:bg-gray-700/40 border-white/30 dark:border-gray-600/30'" class="backdrop-blur-sm p-3 rounded-lg border">
+                    <div class="grid grid-cols-2 gap-2 mb-4">
+                        <template x-for="(paper, index) in ['Paper 1', 'Paper 2']" :key="paper">
+                            <div :class="viewMode === 'paper' && selectedPaper === paper ? 'bg-blue-600/20 border-blue-600/30' : 'bg-white/40 dark:bg-gray-700/40 border-white/30 dark:border-gray-600/30'" class="backdrop-blur-sm p-3 rounded-lg border">
                                 <div class="space-y-2">
                                     <div class="flex items-center justify-between text-xs">
-                                        <span :class="selectedPaper === paper ? 'text-blue-700 dark:text-blue-300' : 'text-slate-600 dark:text-slate-400'">Progress</span>
-                                        <span :class="selectedPaper === paper ? 'text-blue-800 dark:text-blue-200' : 'text-slate-800 dark:text-slate-200'" class="font-medium" x-text="`${getPaperProgress(paper)}%`"></span>
+                                        <span :class="viewMode === 'paper' && selectedPaper === paper ? 'text-blue-700 dark:text-blue-300' : 'text-slate-600 dark:text-slate-400'">Progress</span>
+                                        <span :class="viewMode === 'paper' && selectedPaper === paper ? 'text-blue-800 dark:text-blue-200' : 'text-slate-800 dark:text-slate-200'" class="font-medium" x-text="`${getPaperProgress(paper)}%`"></span>
                                     </div>
                                     <div class="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-1.5">
-                                        <div :class="selectedPaper === paper ? 'bg-blue-600' : 'bg-slate-500'" class="h-1.5 rounded-full transition-all duration-300" :style="`width: ${getPaperProgress(paper)}%`"></div>
+                                        <div :class="viewMode === 'paper' && selectedPaper === paper ? 'bg-blue-600' : 'bg-slate-500'" class="h-1.5 rounded-full transition-all duration-300" :style="`width: ${getPaperProgress(paper)}%`"></div>
                                     </div>
                                     <div class="flex items-center justify-between text-xs">
-                                        <span :class="selectedPaper === paper ? 'text-blue-700 dark:text-blue-300' : 'text-slate-600 dark:text-slate-400'">Avg. Confidence</span>
-                                        <span :class="selectedPaper === paper ? 'text-blue-800 dark:text-blue-200' : 'text-slate-800 dark:text-slate-200'" class="font-medium" x-text="`${getPaperAverageConfidence(paper).toFixed(1)}/5`"></span>
+                                        <span :class="viewMode === 'paper' && selectedPaper === paper ? 'text-blue-700 dark:text-blue-300' : 'text-slate-600 dark:text-slate-400'">Avg. Confidence</span>
+                                        <span :class="viewMode === 'paper' && selectedPaper === paper ? 'text-blue-800 dark:text-blue-200' : 'text-slate-800 dark:text-slate-200'" class="font-medium" x-text="`${getPaperAverageConfidence(paper).toFixed(1)}/5`"></span>
                                     </div>
                                     <div class="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-1.5">
                                         <div class="h-1.5 rounded-full transition-all duration-300" :style="`width: ${(getPaperAverageConfidence(paper) / 5) * 100}%; ${getConfidenceBarStyle(Math.round(getPaperAverageConfidence(paper)))}`"></div>
@@ -417,16 +428,16 @@
                     <div class="grid grid-cols-2 gap-2 text-sm">
                         <div class="bg-white/60 dark:bg-gray-700/60 backdrop-blur-sm p-2 rounded">
                             <div class="text-blue-700 dark:text-blue-400 font-medium">Overall Progress</div>
-                            <div class="text-blue-800 dark:text-blue-300 font-bold" x-text="`${getOverallProgress()}%`"></div>
+                            <div class="text-blue-800 dark:text-blue-300 font-bold" x-text="`${getOverallProgressAllPapers()}%`"></div>
                             <div class="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2 mt-1">
-                                <div class="bg-blue-600 h-2 rounded-full transition-all duration-300" :style="`width: ${getOverallProgress()}%`"></div>
+                                <div class="bg-blue-600 h-2 rounded-full transition-all duration-300" :style="`width: ${getOverallProgressAllPapers()}%`"></div>
                             </div>
                         </div>
                         <div class="bg-white/60 dark:bg-gray-700/60 backdrop-blur-sm p-2 rounded">
-                            <div class="text-green-700 dark:text-green-400 font-medium">Overall Avg. Confidence</div>
-                            <div class="text-green-800 dark:text-green-300 font-bold" x-text="`${getAverageConfidence()}/5`"></div>
+                            <div class="text-green-700 dark:text-green-400 font-medium">Overall Confidence</div>
+                            <div class="text-green-800 dark:text-green-300 font-bold" x-text="`${getOverallConfidenceAllPapers().toFixed(1)}/5`"></div>
                             <div class="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2 mt-1">
-                                <div class="h-2 rounded-full transition-all duration-300" :style="`width: ${(getAverageConfidence() / 5) * 100}%; ${getConfidenceBarStyle(Math.round(getAverageConfidence()))}`"></div>
+                                <div class="h-2 rounded-full transition-all duration-300" :style="`width: ${(getOverallConfidenceAllPapers() / 5) * 100}%; ${getConfidenceBarStyle(Math.round(getOverallConfidenceAllPapers()))}`"></div>
                             </div>
                         </div>
                     </div>
@@ -455,7 +466,7 @@
                             <!-- Group sections -->
                             <template x-if="item.type === 'group'">
                                 <div>
-                                    <button @click="toggleGroup(item.title)" :class="expandedGroups[item.title] ? 'bg-green-100 dark:bg-green-900/50 border-l-4 border-l-green-500 dark:border-l-green-500' : 'bg-gray-50 dark:bg-gray-700 border-l-4 border-l-transparent'" class="w-full p-3 text-left border-b border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-300">
+                                    <button @click="toggleGroup(item.title)" :class="expandedGroups[item.title] ? 'bg-green-100 dark:bg-green-900/50 border-l-4 border-l-green-500 dark:border-l-green-500' : 'bg-gray-100 dark:bg-gray-700 border-l-4 border-l-transparent'" class="w-full p-3 text-left border-b border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-300">
                                         <div class="flex items-center justify-between">
                                             <div class="flex items-center space-x-2">
                                                 <i :data-lucide="item.icon" class="w-4 h-4 text-gray-600 dark:text-gray-400"></i>
@@ -535,9 +546,9 @@
                                              const rect = e.currentTarget.getBoundingClientRect();
                                              const x = e.clientX - rect.left - rect.width / 2;
                                              const y = e.clientY - rect.top - rect.height / 2;
-                                             const rotateX = (y / rect.height) * -7.5;
-                                             const rotateY = (x / rect.width) * 7.5;
-                                             e.currentTarget.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.01)`;
+                                             const rotateX = (y / rect.height) * -3;
+                                             const rotateY = (x / rect.width) * 3;
+                                             e.currentTarget.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.005)`;
                                          }"
                                          @mouseleave="(e) => {
                                              e.currentTarget.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) scale(1)';
