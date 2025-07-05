@@ -89,12 +89,12 @@ export function createPhysicsAuditTool(specificationData, paperModeGroups, specM
                 
                 if (this.viewMode === 'spec') {
                     this.selectedPaper = 'All Topics';
-                } else {
-                    this.selectedPaper = 'Paper 1';
                 }
                 // Reset to first available section
                 const firstItem = this.currentGroups[0];
-                this.activeSection = firstItem.type === 'single' ? firstItem.key : firstItem.sections[0];
+                if (firstItem) {
+                    this.activeSection = firstItem.type === 'single' ? firstItem.key : firstItem.sections[0];
+                }
             });
             
             this.$watch('selectedPaper', () => {
