@@ -314,7 +314,7 @@
                 const totalTopics = this.getGroupTotalTopics(sections);
                 const assessedTopics = this.getGroupAssessedCount(sections);
                 return totalTopics > 0 ? Math.round((assessedTopics / totalTopics) * 100) : 0;
-            },
+            },,
             
             getGroupTotalTopics(sections) {
                 return sections.reduce((sum, key) => sum + this.specificationData[key].topics.length, 0);
