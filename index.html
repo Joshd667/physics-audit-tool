@@ -27,7 +27,10 @@
             sidebarVisible: true,
             expandedGroups: {},
             viewMode: 'paper', // 'paper' or 'spec'
-            darkMode: false,
+            // Track which group was last expanded for section cards
+            lastExpandedGroup: null,
+            
+            // --- DATA ---
             
             // --- DATA ---
             specificationData: specificationData,
@@ -127,11 +130,18 @@
             
             selectSection(sectionKey) {
                 this.activeSection = sectionKey;
+                
+                // When a section is selected, we want to show its topics, not the group cards
+                // So we reset the lastExpandedGroup to hide section cards
+                this.lastExpandedGroup = null;
+                
+                // Ensure the group containing this section is expanded in sidebar
                 this.currentGroups.forEach(item => {
                     if (item.type === "group" && item.sections.includes(sectionKey)) {
                         this.expandedGroups[item.title] = true;
                     }
                 });
+                
                 // Close sidebar on mobile when topic is selected
                 if (window.innerWidth < 768) {
                     this.sidebarVisible = false;
@@ -140,6 +150,13 @@
             
             toggleGroup(groupTitle) {
                 this.expandedGroups[groupTitle] = !this.expandedGroups[groupTitle];
+                
+                // Track the last expanded group for section cards
+                if (this.expandedGroups[groupTitle]) {
+                    this.lastExpandedGroup = groupTitle;
+                } else if (this.lastExpandedGroup === groupTitle) {
+                    this.lastExpandedGroup = null;
+                }
             },
             
             exportResults() {
@@ -244,32 +261,33 @@
             },
             
             showSectionCards() {
-                // Show section cards when any group is expanded
-                return this.currentGroups.some(item => 
-                    item.type === 'group' && this.expandedGroups[item.title]
+                // Show section cards only if we have a last expanded group and we're not viewing a specific section's topics
+                if (!this.lastExpandedGroup) return false;
+                
+                // Check if the active section belongs to the last expanded group
+                const lastGroup = this.currentGroups.find(item => 
+                    item.type === 'group' && item.title === this.lastExpandedGroup
                 );
+                
+                // Show cards if we have an expanded group but are not viewing a specific section's topics
+                return lastGroup && this.expandedGroups[this.lastExpandedGroup] && 
+                       (!lastGroup.sections.includes(this.activeSection) || this.showingGroupOverview);
             },
             
             getCurrentGroupSections() {
-                // Get all sections from expanded groups
-                const expandedGroups = this.currentGroups.filter(item => 
-                    item.type === 'group' && this.expandedGroups[item.title]
+                // Get sections only from the last expanded group
+                if (!this.lastExpandedGroup) return [];
+                
+                const lastGroup = this.currentGroups.find(item => 
+                    item.type === 'group' && item.title === this.lastExpandedGroup
                 );
                 
-                if (expandedGroups.length === 0) return [];
+                if (!lastGroup || !this.expandedGroups[this.lastExpandedGroup]) return [];
                 
-                // Return sections from all expanded groups
-                const allSections = [];
-                expandedGroups.forEach(group => {
-                    group.sections.forEach(key => {
-                        allSections.push({
-                            key,
-                            ...this.specificationData[key]
-                        });
-                    });
-                });
-                
-                return allSections;
+                return lastGroup.sections.map(key => ({
+                    key,
+                    ...this.specificationData[key]
+                }));
             }
         }));
         
