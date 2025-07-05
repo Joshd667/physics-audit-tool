@@ -416,14 +416,14 @@
                     
                     <div class="grid grid-cols-2 gap-2 text-sm">
                         <div class="bg-white/60 dark:bg-gray-700/60 backdrop-blur-sm p-2 rounded">
-                            <div class="text-blue-700 dark:text-blue-400 font-medium">Progress</div>
+                            <div class="text-blue-700 dark:text-blue-400 font-medium">Overall Progress</div>
                             <div class="text-blue-800 dark:text-blue-300 font-bold" x-text="`${getOverallProgress()}%`"></div>
                             <div class="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2 mt-1">
                                 <div class="bg-blue-600 h-2 rounded-full transition-all duration-300" :style="`width: ${getOverallProgress()}%`"></div>
                             </div>
                         </div>
                         <div class="bg-white/60 dark:bg-gray-700/60 backdrop-blur-sm p-2 rounded">
-                            <div class="text-green-700 dark:text-green-400 font-medium">Avg. Confidence</div>
+                            <div class="text-green-700 dark:text-green-400 font-medium">Overall Avg. Confidence</div>
                             <div class="text-green-800 dark:text-green-300 font-bold" x-text="`${getAverageConfidence()}/5`"></div>
                             <div class="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2 mt-1">
                                 <div class="h-2 rounded-full transition-all duration-300" :style="`width: ${(getAverageConfidence() / 5) * 100}%; ${getConfidenceBarStyle(Math.round(getAverageConfidence()))}`"></div>
@@ -535,9 +535,9 @@
                                              const rect = e.currentTarget.getBoundingClientRect();
                                              const x = e.clientX - rect.left - rect.width / 2;
                                              const y = e.clientY - rect.top - rect.height / 2;
-                                             const rotateX = (y / rect.height) * -15;
-                                             const rotateY = (x / rect.width) * 15;
-                                             e.currentTarget.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.02)`;
+                                             const rotateX = (y / rect.height) * -7.5;
+                                             const rotateY = (x / rect.width) * 7.5;
+                                             e.currentTarget.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.01)`;
                                          }"
                                          @mouseleave="(e) => {
                                              e.currentTarget.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) scale(1)';
