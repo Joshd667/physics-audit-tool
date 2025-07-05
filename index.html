@@ -131,16 +131,17 @@
             selectSection(sectionKey) {
                 this.activeSection = sectionKey;
                 
-                // When a section is selected, we want to show its topics, not the group cards
-                // So we reset the lastExpandedGroup to hide section cards
-                this.lastExpandedGroup = null;
+                // When a section is selected, hide the group cards to show specific section topics
+                // But keep track of which group this section belongs to
+                const parentGroup = this.currentGroups.find(item => 
+                    item.type === "group" && item.sections.includes(sectionKey)
+                );
                 
-                // Ensure the group containing this section is expanded in sidebar
-                this.currentGroups.forEach(item => {
-                    if (item.type === "group" && item.sections.includes(sectionKey)) {
-                        this.expandedGroups[item.title] = true;
-                    }
-                });
+                if (parentGroup) {
+                    // Keep the parent group as the last expanded for back button functionality
+                    this.lastExpandedGroup = parentGroup.title;
+                    this.expandedGroups[parentGroup.title] = true;
+                }
                 
                 // Close sidebar on mobile when topic is selected
                 if (window.innerWidth < 768) {
@@ -149,14 +150,11 @@
             },
             
             toggleGroup(groupTitle) {
-                this.expandedGroups[groupTitle] = !this.expandedGroups[groupTitle];
+                // Always set this as the last clicked group, regardless of expanding/collapsing
+                this.lastExpandedGroup = groupTitle;
                 
-                // Track the last expanded group for section cards
-                if (this.expandedGroups[groupTitle]) {
-                    this.lastExpandedGroup = groupTitle;
-                } else if (this.lastExpandedGroup === groupTitle) {
-                    this.lastExpandedGroup = null;
-                }
+                // Then toggle the expansion state
+                this.expandedGroups[groupTitle] = !this.expandedGroups[groupTitle];
             },
             
             exportResults() {
@@ -261,33 +259,48 @@
             },
             
             showSectionCards() {
-                // Show section cards only if we have a last expanded group and we're not viewing a specific section's topics
-                if (!this.lastExpandedGroup) return false;
-                
-                // Check if the active section belongs to the last expanded group
-                const lastGroup = this.currentGroups.find(item => 
-                    item.type === 'group' && item.title === this.lastExpandedGroup
-                );
-                
-                // Show cards if we have an expanded group but are not viewing a specific section's topics
-                return lastGroup && this.expandedGroups[this.lastExpandedGroup] && 
-                       (!lastGroup.sections.includes(this.activeSection) || this.showingGroupOverview);
+                // Show section cards if we have a last clicked group
+                return this.lastExpandedGroup !== null;
             },
             
             getCurrentGroupSections() {
-                // Get sections only from the last expanded group
+                // Get sections only from the last clicked group
                 if (!this.lastExpandedGroup) return [];
                 
                 const lastGroup = this.currentGroups.find(item => 
                     item.type === 'group' && item.title === this.lastExpandedGroup
                 );
                 
-                if (!lastGroup || !this.expandedGroups[this.lastExpandedGroup]) return [];
+                if (!lastGroup) return [];
                 
                 return lastGroup.sections.map(key => ({
                     key,
                     ...this.specificationData[key]
                 }));
+            },
+            
+            goBackToGroupCards() {
+                // Reset to show group cards instead of specific section
+                this.lastExpandedGroup = this.getCurrentGroupForSection();
+            },
+            
+            getCurrentGroupForSection() {
+                // Find which group contains the current active section
+                const currentGroup = this.currentGroups.find(item => 
+                    item.type === 'group' && item.sections.includes(this.activeSection)
+                );
+                return currentGroup ? currentGroup.title : null;
+            },
+            
+            isViewingSpecificSection() {
+                // Check if we're viewing a specific section's topics (not group cards)
+                if (!this.lastExpandedGroup) return true; // Default to showing topics if no group selected
+                
+                const lastGroup = this.currentGroups.find(item => 
+                    item.type === 'group' && item.title === this.lastExpandedGroup
+                );
+                
+                return lastGroup && lastGroup.sections.includes(this.activeSection) && !this.showSectionCards();
             }
         }));
         
@@ -451,7 +464,7 @@
                 <div class="flex-1 overflow-y-auto bg-gray-50 dark:bg-gray-900 relative z-10">
                     <div class="p-6">
                         <!-- Section Cards View -->
-                        <div x-show="showSectionCards()" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 transform scale-95 -translate-y-4" x-transition:enter-end="opacity-100 transform scale-100 translate-y-0">
+                        <div x-show="showSectionCards() && getCurrentGroupSections().length > 0" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 transform scale-95 -translate-y-4" x-transition:enter-end="opacity-100 transform scale-100 translate-y-0">
                             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
                                 <template x-for="section in getCurrentGroupSections()" :key="section.key">
                                     <div @click="selectSection(section.key)" class="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all cursor-pointer">
@@ -480,8 +493,19 @@
                             </div>
                         </div>
 
-                        <!-- Regular Topics View -->
-                        <div x-show="currentSection && !showSectionCards()" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 transform scale-95 -translate-y-4" x-transition:enter-end="opacity-100 transform scale-100 translate-y-0" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
+                        <!-- Regular Topics View with Back Button -->
+                        <div x-show="currentSection && !showSectionCards()" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 transform scale-95 -translate-y-4" x-transition:enter-end="opacity-100 transform scale-100 translate-y-0">
+                            <!-- Back Button -->
+                            <div x-show="lastExpandedGroup" class="mb-4">
+                                <button @click="goBackToGroupCards()" class="flex items-center space-x-2 px-4 py-2 bg-white/60 dark:bg-gray-700/60 hover:bg-white/80 dark:hover:bg-gray-600/80 backdrop-blur-sm rounded-lg transition-colors text-gray-700 dark:text-gray-300">
+                                    <svg class="w-4 h-4 rotate-180" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                    </svg>
+                                    <span class="text-sm font-medium" x-text="`Back to ${lastExpandedGroup}`"></span>
+                                </button>
+                            </div>
+                            
+                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
                             <template x-for="topic in currentSection.topics" :key="topic.id">
                                 <div class="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-shadow">
                                     <div class="mb-3">
